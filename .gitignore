@@ -1,0 +1,4 @@
+.idea/
+.cloudbase/
+.dockerignore
+.node_modules/*

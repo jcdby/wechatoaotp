@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const { init: initDB, Counter } = require("./db");
+const sha1 = require('sha1');
 
 const logger = morgan("tiny");
 
@@ -17,30 +18,23 @@ app.get("/", async (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// 更新计数
-app.post("/api/count", async (req, res) => {
-  const { action } = req.body;
-  if (action === "inc") {
-    await Counter.create();
-  } else if (action === "clear") {
-    await Counter.destroy({
-      truncate: true,
-    });
+app.get("/check", (req, res) => {
+  const signature = req.query.signature;
+  const timestamp = req.query.timestamp;
+  const nonce = req.query.nonce;
+
+  const token = "123abc";
+  const temp = [token, timestamp, nonce].sort().join("");
+
+  const tmpStr = sha1(temp);
+  if (tmpStr === signature) {
+    res.send(req.query.echostr);
+  } else {
+    res.send("error");
   }
-  res.send({
-    code: 0,
-    data: await Counter.count(),
-  });
 });
 
-// 获取计数
-app.get("/api/count", async (req, res) => {
-  const result = await Counter.count();
-  res.send({
-    code: 0,
-    data: result,
-  });
-});
+
 
 // 小程序调用，获取微信 Open ID
 app.get("/api/wx_openid", async (req, res) => {
@@ -52,7 +46,7 @@ app.get("/api/wx_openid", async (req, res) => {
 const port = process.env.PORT || 80;
 
 async function bootstrap() {
-  await initDB();
+  // await initDB();
   app.listen(port, () => {
     console.log("启动成功", port);
   });
