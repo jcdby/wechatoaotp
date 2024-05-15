@@ -56,8 +56,8 @@ app.post("/check", (req, res) => {
   .on("end", () => {
     const receiveMsg = xmlData
     let responseMsg = `<xml>
-                                <ToUserName><![CDATA[${receiveMsg.xml.FromUserName}]]></ToUserName>
-                                <FromUserName><![CDATA[${receiveMsg.xml.ToUserName}]]></FromUserName>
+                                <ToUserName><![CDATA[${receiveMsg.FromUserName}]]></ToUserName>
+                                <FromUserName><![CDATA[${receiveMsg.ToUserName}]]></FromUserName>
                                 <CreateTime>${new Date().getTime()}</CreateTime>
                                 <MsgType><![CDATA[text]]></MsgType>
                                 <Content><![CDATA[这是后台回复的内容]]></Content>
