@@ -5,6 +5,7 @@ const morgan = require("morgan");
 const { init: initDB } = require("./db");
 const sha1 = require('sha1');
 const axios = require('axios');
+const parseString = require('xml2js').parseString;
 
 const logger = morgan("tiny");
 
@@ -38,7 +39,32 @@ app.get("/check", (req, res) => {
 
 app.post("/check", (req, res) => {
   const data = req.body;
-  console.log(data)
+  let xmlData;
+
+  req.on("data", data => {
+    const xml = data.toString();
+    parseString(xml, (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(result);
+        xmlData = result;
+      }
+    });
+
+  })
+  .on("end", () => {
+    const msg = xmlData
+    let responseMsg = `<xml>
+                                <ToUserName><![CDATA[${receiveMsg.xml.FromUserName}]]></ToUserName>
+                                <FromUserName><![CDATA[${receiveMsg.xml.ToUserName}]]></FromUserName>
+                                <CreateTime>${new Date().getTime()}</CreateTime>
+                                <MsgType><![CDATA[text]]></MsgType>
+                                <Content><![CDATA[这是后台回复的内容]]></Content>
+                            </xml>`
+        console.log(responseMsg)
+        res.send (responseMsg)
+  })
   res.send(data)
 })
 
