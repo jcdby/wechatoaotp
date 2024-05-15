@@ -2,10 +2,11 @@ const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
-const { init: initDB } = require("./db");
+const { init: initDB, OTP } = require("./db");
 const sha1 = require("sha1");
 const axios = require("axios");
 const parseString = require("xml2js").parseString;
+const { Op } = require("sequelize");
 
 const logger = morgan("tiny");
 
@@ -15,6 +16,45 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cors());
 app.use(logger);
+
+function genOtp(uuid, openid) {
+  return new Promise((resolve, reject) => {
+    OTP.findOne({
+      where: {
+        [Op.and]: [
+          { uuid },
+          {
+            expire: {
+              [Op.gt]: new Date(),
+            },
+          },
+        ],
+      },
+    })
+      .then((data) => {
+        if (data) {
+          const _openid = data.openid;
+          if (_openid === openid) {
+            resolve(data.code);
+          } else {
+            reject("openid error");
+          }
+        } else {
+          OTP.create({
+            uuid,
+            openid,
+            code: Math.floor(Math.random() * 9000 + 1000).toString(),
+            expire: new Date(Date.now() + 1000 * 60 * 1),
+          }).then((data) => {
+            resolve(data.code);
+          });
+        }
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
 
 // 首页
 app.get("/", async (req, res) => {
@@ -35,6 +75,17 @@ app.get("/check", (req, res) => {
   } else {
     res.send("error");
   }
+});
+
+app.get("/genotp", (req, res) => {
+  const data = req.query;
+  genOtp(data.uuid, data.openid)
+    .then((code) => {
+      res.send({ code });
+    })
+    .catch((err) => {
+      res.send({ err });
+    });
 });
 
 app.post("/check", (req, res) => {
@@ -58,15 +109,23 @@ app.post("/check", (req, res) => {
       const FromUserName = receiveMsg.xml.FromUserName[0];
       const ToUserName = receiveMsg.xml.ToUserName[0];
       const MsgType = receiveMsg.xml.MsgType[0];
-      const Event = receiveMsg.xml.Event[0];
-
-      let replyContent = "这是后台回复的内容";
-
+      let Event;
+      let EventKey;
+      let replyContent = "欢迎";
+      
       if (MsgType === "event" && Event === "SCAN") {
-        console.log(Event);
-        replyContent = "验证码是 123456";
+        Event = receiveMsg.xml.Event[0];
+        EventKey = receiveMsg.xml.EventKey[0];
+        try {
+          const code = await genOtp(EventKey, FromUserName);
 
+          replyContent = "验证码是 " + code;
+        } catch (err) {
+          replyContent = "验证码生成失败";
+        }
       }
+
+
       console.log(FromUserName, ToUserName);
       let responseMsg = `<xml>
                                 <ToUserName><![CDATA[${FromUserName}]]></ToUserName>
@@ -74,7 +133,7 @@ app.post("/check", (req, res) => {
                                 <CreateTime>${new Date().getTime()}</CreateTime>
                                 <MsgType><![CDATA[text]]></MsgType>
                                 <Content><![CDATA[${replyContent}]]></Content>
-                            </xml>`;;
+                            </xml>`;
       console.log(responseMsg);
       res.send(responseMsg);
     });

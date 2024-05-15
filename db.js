@@ -35,9 +35,8 @@ const OTP = sequelize.define("OTP", {
     allowNull: false,
   },
   code: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: false,
-    length: 4,
   },
   expire: {
     type: DataTypes.DATE,
