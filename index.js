@@ -113,18 +113,19 @@ app.post("/check", async (req, res) => {
       let EventKey;
       let replyContent = "欢迎";
 
-      if (MsgType === "event" && Event === "SCAN") {
+      if (MsgType === "event") {
         Event = receiveMsg.xml.Event[0];
         EventKey = receiveMsg.xml.EventKey[0];
-        try {
-          const code = await genOtp(EventKey, FromUserName);
+        if (Event === "SCAN") {
+          try {
+            const code = await genOtp(EventKey, FromUserName);
 
-          replyContent = "验证码是 " + code;
-        } catch (err) {
-          replyContent = "验证码生成失败";
+            replyContent = "验证码是 " + code;
+          } catch (err) {
+            replyContent = "验证码生成失败";
+          }
         }
       }
-
 
       console.log(FromUserName, ToUserName);
       let responseMsg = `<xml>
