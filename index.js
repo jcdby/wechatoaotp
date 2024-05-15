@@ -68,7 +68,6 @@ app.post("/check", (req, res) => {
       console.log(responseMsg);
       res.send(responseMsg);
     });
-  res.send(data);
 });
 
 // 获取二维码数据
