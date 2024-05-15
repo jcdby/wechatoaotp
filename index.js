@@ -55,9 +55,9 @@ app.post("/check", (req, res) => {
     })
     .on("end", () => {
       const receiveMsg = xmlData;
-      console.log(receiveMsg)
-      const FromUserName = receiveMsg.FromUserName[0];
-      const ToUserName = receiveMsg.ToUserName[0];
+      const FromUserName = receiveMsg.xml.FromUserName[0];
+      const ToUserName = receiveMsg.xml.ToUserName[0];
+      console.log(FromUserName, ToUserName);
       let responseMsg = `<xml>
                                 <ToUserName><![CDATA[${FromUserName}]]></ToUserName>
                                 <FromUserName><![CDATA[${ToUserName}]]></FromUserName>
