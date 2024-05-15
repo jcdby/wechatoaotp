@@ -54,7 +54,7 @@ app.post("/check", (req, res) => {
 
   })
   .on("end", () => {
-    const msg = xmlData
+    const receiveMsg = xmlData
     let responseMsg = `<xml>
                                 <ToUserName><![CDATA[${receiveMsg.xml.FromUserName}]]></ToUserName>
                                 <FromUserName><![CDATA[${receiveMsg.xml.ToUserName}]]></FromUserName>
