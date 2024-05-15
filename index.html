@@ -9,16 +9,40 @@
   <button id="btn">验证</button>
   <script>
     document.getElementById('btn').onclick = function() {
-      fetch('/api/test', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name: 'zhangsan'
+      var uuid = '123'
+      var input = document.createElement('input')
+      input.placeholder = '请输入验证码'
+      document.body.appendChild(input)
+
+      var btn = document.createElement('button')
+      btn.innerHTML = '验证'
+      document.body.appendChild(btn)
+      btn.onclick = function() {
+        var code = input.value
+        var encodedCode = encodeURIComponent(code)
+        fetch('/opt-verity?code=' + encodedCode, {
+          method: 'get',
+        }).then(res => res.json()).then(res => {
+          console.log(res)
         })
+      }
+
+
+
+      fetch('/qrcode?sceneId=' + uuid, {
+        method: 'get',
       }).then(res => res.json()).then(res => {
         console.log(res)
+        var ticket = res.ticket
+        var url = res.url
+        var encodedTicket = encodeURIComponent(ticket)
+        fetch("https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket="+encodedTicket)
+        .then(res => res.blob())
+        .then(res => {
+          var img = document.createElement('img')
+          img.src = URL.createObjectURL(res)
+          document.body.appendChild(img)
+        })
       })
     }
   </script>

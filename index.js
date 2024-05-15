@@ -57,14 +57,24 @@ app.post("/check", (req, res) => {
       const receiveMsg = xmlData;
       const FromUserName = receiveMsg.xml.FromUserName[0];
       const ToUserName = receiveMsg.xml.ToUserName[0];
+      const MsgType = receiveMsg.xml.MsgType[0];
+      const Event = receiveMsg.xml.Event[0];
+
+      let replyContent = "这是后台回复的内容";
+
+      if (MsgType === "event" && Event === "SCAN") {
+        console.log(Event);
+        replyContent = "验证码是 123456";
+
+      }
       console.log(FromUserName, ToUserName);
       let responseMsg = `<xml>
                                 <ToUserName><![CDATA[${FromUserName}]]></ToUserName>
                                 <FromUserName><![CDATA[${ToUserName}]]></FromUserName>
                                 <CreateTime>${new Date().getTime()}</CreateTime>
                                 <MsgType><![CDATA[text]]></MsgType>
-                                <Content><![CDATA[这是后台回复的内容]]></Content>
-                            </xml>`;
+                                <Content><![CDATA[${replyContent}]]></Content>
+                            </xml>`;;
       console.log(responseMsg);
       res.send(responseMsg);
     });
@@ -73,22 +83,23 @@ app.post("/check", (req, res) => {
 // 获取二维码数据
 app.get("/qrcode", (req, res) => {
   const sceneId = req.query.sceneId;
+  const body = {
+    expire_seconds: 604800,
+    action_name: "QR_STR_SCENE",
+    action_info: {
+      scene: {
+        scene_str: sceneId,
+      },
+    },
+  };
   axios
     .post(
       `https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=${accessToken}`,
-      {
-        body: JSON.stringify({
-          expire_seconds: 604800,
-          action_name: "QR_SCENE",
-          action_info: {
-            scene: {
-              scene_id: sceneId,
-            },
-          },
-        }),
-      }
+      body
     )
-    .then((res) => res.data)
+    .then((res) => {
+      return res.data;
+    })
     .then((data) => {
       res.send(data);
     })
@@ -99,6 +110,11 @@ app.get("/qrcode", (req, res) => {
 
 app.get("/opt-verity", (req, res) => {
   const code = req.query.code;
+  if (code === "123456") {
+    res.send("验证成功");
+  } else {
+    res.send("验证失败");
+  }
 });
 
 // 小程序调用，获取微信 Open ID
