@@ -170,7 +170,7 @@ app.get("/qrcode", (req, res) => {
 
 app.get("/opt-verity", async (req, res) => {
   const uuid = req.query.uuid;
-  const code = req.query.code;
+  const _code = req.query.code;
 
   OTP.findOne({
     where: {
@@ -180,13 +180,13 @@ app.get("/opt-verity", async (req, res) => {
     if (data) {
       const expire = data.expire;
       const code = data.code;
-      if (expire > new Date() && code === code) {
+      if (expire > new Date() && _code === code) {
         res.send("验证成功");
       } else {
         res.send("验证失败");
       }
     } else {
-      res.send("验证失败");
+      res.send("验证失败, 没有验证码");
     }
   });
 });
