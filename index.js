@@ -88,7 +88,7 @@ app.get("/genotp", (req, res) => {
     });
 });
 
-app.post("/check", (req, res) => {
+app.post("/check", async (req, res) => {
   const data = req.body;
   let xmlData;
 
@@ -104,7 +104,7 @@ app.post("/check", (req, res) => {
         }
       });
     })
-    .on("end", () => {
+    .on("end", async () => {
       const receiveMsg = xmlData;
       const FromUserName = receiveMsg.xml.FromUserName[0];
       const ToUserName = receiveMsg.xml.ToUserName[0];
@@ -112,7 +112,7 @@ app.post("/check", (req, res) => {
       let Event;
       let EventKey;
       let replyContent = "欢迎";
-      
+
       if (MsgType === "event" && Event === "SCAN") {
         Event = receiveMsg.xml.Event[0];
         EventKey = receiveMsg.xml.EventKey[0];
@@ -167,13 +167,27 @@ app.get("/qrcode", (req, res) => {
     });
 });
 
-app.get("/opt-verity", (req, res) => {
+app.get("/opt-verity", async (req, res) => {
+  const uuid = req.query.uuid;
   const code = req.query.code;
-  if (code === "123456") {
-    res.send("验证成功");
-  } else {
-    res.send("验证失败");
-  }
+
+  OTP.findOne({
+    where: {
+      uuid,
+    },
+  }).then((data) => {
+    if (data) {
+      const expire = data.expire;
+      const code = data.code;
+      if (expire > new Date() && code === code) {
+        res.send("验证成功");
+      } else {
+        res.send("验证失败");
+      }
+    } else {
+      res.send("验证失败");
+    }
+  });
 });
 
 // 小程序调用，获取微信 Open ID
