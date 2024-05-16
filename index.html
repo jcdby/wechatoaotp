@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+  <script src=
+"https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
+    </script>
 </head>
 <body style="background-color: aliceblue;">
   <main>
@@ -15,6 +18,7 @@
     </form>
   </main>
   <button id="btn">验证</button>
+  <div id="qrcode"></div>
   <script>
     var isVerified = false
     document.getElementById('submit').onclick = function () {
@@ -62,14 +66,7 @@
         console.log(res)
         var ticket = res.ticket
         var url = res.url
-        var encodedTicket = encodeURIComponent(ticket)
-        fetch("https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket="+encodedTicket)
-        .then(res => res.blob())
-        .then(res => {
-          var img = document.createElement('img')
-          img.src = URL.createObjectURL(res)
-          document.body.appendChild(img)
-        })
+        var qrcode = new QRCode("qrcode", url);
       })
     }
   </script>
