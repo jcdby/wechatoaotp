@@ -52,9 +52,9 @@
         var encodedCode = encodeURIComponent(code)
         fetch('/opt-verity?code=' + encodedCode + '&uuid=' + uuid, {
           method: 'get',
-        }).then(res => {
-          var data = res.body;
-          var {isOk} = data;
+        }).then(res => res.json()).then(res => {
+          var {isOk} = res;
+          console.log(res)
           if (isOk) {
             isVerified = true
             alert('验证成功')
