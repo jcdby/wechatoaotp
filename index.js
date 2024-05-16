@@ -174,19 +174,35 @@ app.get("/opt-verity", async (req, res) => {
 
   OTP.findOne({
     where: {
-      uuid,
+      [Op.and]: [
+        { uuid },
+        {
+          expire: {
+            [Op.gt]: new Date(),
+          },
+        },
+      ],
     },
   }).then((data) => {
     if (data) {
       const expire = data.expire;
       const code = data.code;
       if (expire > new Date() && _code === code) {
-        res.send("验证成功");
+        res.send({
+          isOk: true,
+          msg: "验证成功"
+        });
       } else {
-        res.send("验证失败");
+        res.send({
+          isOk: false,
+          msg: "验证失败"
+        });
       }
     } else {
-      res.send("验证失败, 没有验证码");
+      res.send({
+        isOk: false,
+        msg: "验证失败, 没有验证码"
+      });
     }
   });
 });

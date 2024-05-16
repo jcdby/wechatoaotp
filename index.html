@@ -6,24 +6,61 @@
   <title>Document</title>
 </head>
 <body style="background-color: aliceblue;">
+  <main>
+    <form>
+      <label for="name">
+        <input type="text" name="name" id="name" placeholder="输入名字">
+      </label>
+      <button id="submit" type="button">提交</button>
+    </form>
+  </main>
   <button id="btn">验证</button>
   <script>
+    var isVerified = false
+    document.getElementById('submit').onclick = function () {
+      if (!isVerified) {
+        alert('请先验证!')
+      } else {
+        fetch('/submit', {
+          method: 'post',
+          body: JSON.stringify({
+            name: document.getElementById('name').value
+          }),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }).then(res => res.json()).then(res => {
+          console.log(res)
+        })
+      }
+
+
+    }
+
+
     document.getElementById('btn').onclick = function() {
-      var uuid = '123'
+      var uuid = Math.floor(Math.random() * 9000 + 1000).toString()
       var input = document.createElement('input')
       input.placeholder = '请输入验证码'
       document.body.appendChild(input)
 
       var btn = document.createElement('button')
-      btn.innerHTML = '验证'
+      btn.innerHTML = '确认'
       document.body.appendChild(btn)
       btn.onclick = function() {
         var code = input.value
         var encodedCode = encodeURIComponent(code)
-        fetch('/opt-verity?code=' + encodedCode, {
+        fetch('/opt-verity?code=' + encodedCode + '&uuid=' + uuid, {
           method: 'get',
-        }).then(res => res.json()).then(res => {
-          console.log(res)
+        }).then(res => {
+          var data = res.body;
+          var {isOk} = data;
+          if (isOk) {
+            isVerified = true
+            alert('验证成功')
+          } else {
+            alert('验证失败')
+          }
         })
       }
 
