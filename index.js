@@ -116,6 +116,8 @@ app.post("/check", async (req, res) => {
       if (MsgType === "event") {
         Event = receiveMsg.xml.Event[0];
         EventKey = receiveMsg.xml.EventKey[0];
+        EventKey = EventKey.replace("qrscene_", "");
+
         if (Event === "SCAN" || Event === "subscribe") {
           try {
             const code = await genOtp(EventKey, FromUserName);
