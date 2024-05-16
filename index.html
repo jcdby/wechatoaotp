@@ -21,17 +21,7 @@
       if (!isVerified) {
         alert('请先验证!')
       } else {
-        fetch('/submit', {
-          method: 'post',
-          body: JSON.stringify({
-            name: document.getElementById('name').value
-          }),
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }).then(res => res.json()).then(res => {
-          console.log(res)
-        })
+        alert('提交成功')
       }
 
 
